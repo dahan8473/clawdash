@@ -9,7 +9,7 @@ const fetcher = (url: string) => fetch(url).then(r => r.json())
 export default function AgentsPage() {
   const { data: tokenData } = useSWR('/api/gateway-token', fetcher)
   const token = tokenData?.token ?? ''
-  const { status: wsStatus, messages } = useWebSocket('ws://127.0.0.1:18789', token)
+  const { status: wsStatus, messages } = useWebSocket(token ? 'ws://127.0.0.1:18789' : '', token || undefined)
 
   return (
     <div>

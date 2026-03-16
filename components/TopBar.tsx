@@ -36,10 +36,20 @@ function HeartbeatTimer() {
 export function TopBar() {
   const { data: tokenData } = useSWR('/api/gateway-token', fetcher)
   const token = tokenData?.token ?? ''
-  const { status: wsStatus } = useWebSocket('ws://127.0.0.1:18789', token)
+  // Don't connect until we have the token — avoids a failed attempt before token loads
+  const { status: wsStatus } = useWebSocket(
+    token ? 'ws://127.0.0.1:18789' : '',
+    token || undefined
+  )
 
-  const wsColor = wsStatus === 'connected' ? 'var(--green)' : wsStatus === 'connecting' ? '#FFAA00' : 'var(--term-red, #FF3333)'
-  const wsLabel = wsStatus === 'connected' ? 'ONLINE' : wsStatus === 'connecting' ? 'CONNECTING' : 'OFFLINE'
+  const wsColor = wsStatus === 'connected'   ? 'var(--green)'
+                : wsStatus === 'connecting'  ? 'var(--term-amber, #FFAA00)'
+                : wsStatus === 'disconnected' && !token ? 'var(--green-dim)'
+                : 'var(--term-red, #FF3333)'
+  const wsLabel = wsStatus === 'connected'   ? 'ONLINE'
+                : wsStatus === 'connecting'  ? 'CONNECTING...'
+                : !token                     ? 'LOADING'
+                : 'OFFLINE'
 
   const sep = <span style={{ color: 'var(--green-dim)', margin: '0 10px' }}>│</span>
 

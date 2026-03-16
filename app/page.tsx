@@ -33,38 +33,50 @@ function BootSequence({ onDone }: { onDone: () => void }) {
 
   useEffect(() => {
     let i = 0
+    let cancelled = false
+    const timers: ReturnType<typeof setTimeout>[] = []
+
     const next = () => {
+      if (cancelled) return
       if (i >= BOOT_LINES.length) {
-        setTimeout(() => { setDone(true); onDone() }, 400)
+        const t = setTimeout(() => { if (!cancelled) { setDone(true); onDone() } }, 400)
+        timers.push(t)
         return
       }
-      setLines(prev => [...prev, BOOT_LINES[i]])
+      const line = BOOT_LINES[i]
+      if (typeof line === 'string') setLines(prev => [...prev, line])
       i++
-      setTimeout(next, i === BOOT_LINES.length - 1 ? 300 : 60)
+      const t = setTimeout(next, i === BOOT_LINES.length ? 300 : 60)
+      timers.push(t)
     }
-    const t = setTimeout(next, 100)
-    return () => clearTimeout(t)
+
+    const t0 = setTimeout(next, 100)
+    timers.push(t0)
+    return () => { cancelled = true; timers.forEach(clearTimeout) }
   }, [onDone])
 
   return (
     <div style={{ padding: '32px 24px', fontFamily: 'inherit', fontSize: 13 }}>
-      {lines.map((line, i) => (
+      {lines.map((line, i) => {
+        const safe = typeof line === 'string' ? line : ''
+        return (
         <div
           key={i}
           style={{
-            color: line.includes('[OK]') ? 'var(--green)'
-                 : line.includes('>>>') ? 'var(--green)'
-                 : line === '' ? undefined
+            color: safe.includes('[OK]') ? 'var(--green)'
+                 : safe.includes('>>>') ? 'var(--green)'
+                 : safe === '' ? undefined
                  : 'var(--green-mid)',
-            fontWeight: line.includes('>>>') ? 700 : 400,
-            textShadow: line.includes('>>>') || line.includes('[OK]')
+            fontWeight: safe.includes('>>>') ? 700 : 400,
+            textShadow: safe.includes('>>>') || safe.includes('[OK]')
               ? '0 0 6px var(--green)' : undefined,
             lineHeight: '1.6',
           }}
         >
-          {line || '\u00A0'}
+          {safe || '\u00A0'}
         </div>
-      ))}
+        )
+      })}
       {!done && <div className="cursor" style={{ marginTop: 2, color: 'var(--green)' }}>&nbsp;</div>}
     </div>
   )
@@ -100,7 +112,7 @@ export default function CommandCenter() {
 
   const { data: tokenData } = useSWR('/api/gateway-token', fetcher)
   const token = tokenData?.token ?? ''
-  const { status: wsStatus, messages: wsMessages } = useWebSocket('ws://127.0.0.1:18789', token)
+  const { status: wsStatus, messages: wsMessages } = useWebSocket(token ? 'ws://127.0.0.1:18789' : '', token || undefined)
 
   const { data } = useSWR('/api/status', fetcher, { refreshInterval: 10000, isPaused: () => !booted })
   const { data: cronData } = useSWR('/api/cron',   fetcher, { refreshInterval: 30000, isPaused: () => !booted })
