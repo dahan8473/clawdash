@@ -1,41 +1,36 @@
 # clawdash
 
-OpenClaw Mission Control. A terminal-aesthetic dashboard for monitoring and driving an always-on AI agent.
+**Terminal-UI mission control for a 24/7 AI agent.**
 
-clawdash connects to a local OpenClaw gateway over WebSocket and renders live agent state: active sessions, scheduled jobs, memory, docs, skills, and token spend. The UI plays a full boot sequence on load and keeps the retro-terminal look throughout.
+clawdash is the dashboard for [OpenClaw](https://github.com/dahan8473) — an always-on
+agent running on a Mac Mini. It connects to the local gateway over WebSocket and renders
+live agent state in a retro-terminal skin: active sessions, scheduled jobs, memory, skills,
+docs, and token spend. Boots with a full POST sequence and never breaks character.
 
-## Pages
+> Status: personal tool, lightly maintained. Built to watch my own agent.
 
-- **Overview**: boot sequence, live gateway status, countdown to the next cron run
-- **Agents**: active agent sessions and identities
-- **Cron**: scheduled jobs with human-readable schedules and next-run timers
-- **Costs**: token usage and spend over time, charted with Recharts
-- **Skills**: installed agent skills
-- **Docs**: agent documentation browser
-- **Workshop**: scratch space for working with the agent
+## What's inside
+
+- **Overview** — boot sequence, live gateway status, countdown to the next cron run
+- **Agents** — active sessions and identities
+- **Cron** — scheduled jobs with human-readable schedules and next-run timers
+- **Costs** — token usage and spend over time (Recharts)
+- **Skills / Docs** — installed skills and an agent-docs browser
+- **Workshop** — scratch space for driving the agent
 
 ## Stack
 
-Next.js (App Router), React, TypeScript, Tailwind CSS, SWR for polling, a WebSocket hook for live gateway events, Framer Motion, Recharts.
+Next.js (App Router) · React · TypeScript · Tailwind · SWR polling · a WebSocket hook for
+live gateway events · Framer Motion · Recharts. API routes under `app/api/` proxy the
+gateway so the browser never talks to it directly.
 
-API routes under `app/api/` proxy the OpenClaw gateway so the browser never talks to it directly.
-
-## Running
+## Run
 
 Requires a running OpenClaw gateway (default `ws://127.0.0.1:18789`).
 
 ```bash
 npm install
-npm run dev
+npm run dev        # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
-
-## Build
-
-```bash
-npm run build
-npm start
-```
-
-Lint with `npm run lint`.
+`npm run build && npm start` to serve production · `npm run lint` to lint.
